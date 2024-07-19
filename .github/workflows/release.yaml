@@ -22,7 +22,7 @@ env:
   PACKAGE_NAME: bevy_gamejam5
   # The itch.io page to upload to, in the format: `user-name/project-name`.
   # Comment this out to disable.
-  ITCH_TARGET: tomyrd/bevy_gamejam5
+  ITCH_TARGET: tomyrd/bevy-gamejam5
   # The organization or author that owns the rights to the game.
   OWNER: tomyrd
   # The path to the assets directory.
