@@ -85,6 +85,11 @@ fn update_movement(
         movement.velocity += acceleration * time.delta_seconds();
 
         transform.translation += movement.velocity * time.delta_seconds();
+
+        if movement.velocity.length() > 0.0{
+            let rotation = Quat::from_rotation_arc(Vec3::Z, movement.velocity.normalize());
+            transform.rotation = rotation;
+        }
     }
 }
 
