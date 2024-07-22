@@ -3,6 +3,7 @@ mod dev_tools;
 mod game;
 mod screen;
 mod ui;
+mod fps_counter;
 
 use bevy::{
     asset::AssetMetaCheck,
@@ -21,7 +22,7 @@ impl Plugin for AppPlugin {
         );
 
         // Spawn the main camera.
-        app.add_systems(Startup, spawn_camera);
+        app.add_systems(Startup, spawn_camera3d);
 
         // Add Bevy plugins.
         app.add_plugins(
@@ -54,10 +55,16 @@ impl Plugin for AppPlugin {
 
         // Add other plugins.
         app.add_plugins((game::plugin, screen::plugin, ui::plugin));
+        app.insert_resource(ClearColor(Color::linear_rgba(0.0, 2.0, 10.0, 0.2)));
+        app.insert_resource(AmbientLight {
+            color: Color::default(),
+            brightness: 5000.,
+        });
 
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
         app.add_plugins(dev_tools::plugin);
+        app.add_plugins(fps_counter::plugin);
     }
 }
 
@@ -74,16 +81,20 @@ enum AppSet {
     Update,
 }
 
-fn spawn_camera(mut commands: Commands) {
+// z |
+//   |___ x
+//   o y
+fn spawn_camera3d(mut commands: Commands) {
     commands.spawn((
         Name::new("Camera"),
-        Camera2dBundle::default(),
-        // Render all UI to this camera.
+        Camera3dBundle {
+            transform: Transform::from_xyz(0.0, 0.0, 30.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..Default::default()
+        },
         // Not strictly necessary since we only use one camera,
         // but if we don't use this component, our UI will disappear as soon
         // as we add another camera. This includes indirect ways of adding cameras like using
         // [ui node outlines](https://bevyengine.org/news/bevy-0-14/#ui-node-outline-gizmos)
-        // for debugging. So it's good to have this here for future-proofing.
         IsDefaultUiCamera,
     ));
 }

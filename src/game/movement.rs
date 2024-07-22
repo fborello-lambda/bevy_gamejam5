@@ -19,7 +19,7 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<(Movement, WrapWithinWindow)>();
     app.add_systems(
         Update,
-        (apply_movement, wrap_within_window)
+        (update_movement, wrap_within_window)
             .chain()
             .in_set(AppSet::Update),
     );
@@ -27,7 +27,10 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
-pub struct MovementController(pub Vec2);
+pub struct MovementController{
+    pub intent: Vec2,
+    pub action: bool,
+}
 
 fn record_movement_controller(
     input: Res<ButtonInput<KeyCode>>,
@@ -35,6 +38,7 @@ fn record_movement_controller(
 ) {
     // Collect directional input.
     let mut intent = Vec2::ZERO;
+    let mut action = false;
     if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) {
         intent.y += 1.0;
     }
@@ -47,6 +51,9 @@ fn record_movement_controller(
     if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
         intent.x += 1.0;
     }
+    if input.just_pressed(KeyCode::Space) {
+        action = true;
+    }
 
     // Normalize so that diagonal movement has the same speed as
     // horizontal and vertical movement.
@@ -54,27 +61,30 @@ fn record_movement_controller(
 
     // Apply movement intent to controllers.
     for mut controller in &mut controller_query {
-        controller.0 = intent;
+        controller.intent = intent;
+        controller.action = action;
     }
 }
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
 pub struct Movement {
-    /// Since Bevy's default 2D camera setup is scaled such that
-    /// one unit is one pixel, you can think of this as
-    /// "How many pixels per second should the player move?"
-    /// Note that physics engines may use different unit/pixel ratios.
-    pub speed: f32,
+    pub acceleration: Vec3,
+    pub velocity: Vec3,
 }
 
-fn apply_movement(
+fn update_movement(
     time: Res<Time>,
-    mut movement_query: Query<(&MovementController, &Movement, &mut Transform)>,
+    mut movement_query: Query<(&MovementController, &mut Movement, &mut Transform)>,
 ) {
-    for (controller, movement, mut transform) in &mut movement_query {
-        let velocity = movement.speed * controller.0;
-        transform.translation += velocity.extend(0.0) * time.delta_seconds();
+    for (controller, mut movement, mut transform) in &mut movement_query {
+        let controller_acceleration = controller.intent * 50.0;
+        movement.acceleration = controller_acceleration.extend(0.0);
+
+        let acceleration = movement.acceleration;
+        movement.velocity += acceleration * time.delta_seconds();
+
+        transform.translation += movement.velocity * time.delta_seconds();
     }
 }
 
