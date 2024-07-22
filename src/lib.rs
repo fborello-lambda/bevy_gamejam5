@@ -3,12 +3,7 @@ mod dev_tools;
 mod game;
 mod screen;
 mod ui;
-// New
-mod components;
-mod plugins;
 mod fps_counter;
-
-use plugins::{debug::*, entity::*, keyboard::*, movement::*};
 
 use bevy::{
     asset::AssetMetaCheck,
@@ -65,10 +60,7 @@ impl Plugin for AppPlugin {
             color: Color::default(),
             brightness: 5000.,
         });
-        app.add_plugins(EntityPlugin);
-        //.add_plugins(TranslationPlugin)
-        app.add_plugins(KeyboardPlugin);
-        //.add_plugins(DebugPlugin)
+
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
         app.add_plugins(dev_tools::plugin);
