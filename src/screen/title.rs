@@ -3,7 +3,7 @@
 use bevy::prelude::*;
 
 use super::Screen;
-use crate::ui::prelude::*;
+use crate::{game::spawn::level::Level, ui::prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Title), enter_title);
@@ -36,6 +36,7 @@ fn enter_title(mut commands: Commands) {
 }
 
 fn handle_title_action(
+    mut commands: Commands,
     mut next_screen: ResMut<NextState<Screen>>,
     mut button_query: InteractionQuery<&TitleAction>,
     #[cfg(not(target_family = "wasm"))] mut app_exit: EventWriter<AppExit>,
@@ -43,7 +44,10 @@ fn handle_title_action(
     for (interaction, action) in &mut button_query {
         if matches!(interaction, Interaction::Pressed) {
             match action {
-                TitleAction::Play => next_screen.set(Screen::Playing),
+                TitleAction::Play => {
+                    commands.insert_resource(Level(1));
+                    next_screen.set(Screen::Playing)
+                },
                 TitleAction::Credits => next_screen.set(Screen::Credits),
 
                 #[cfg(not(target_family = "wasm"))]

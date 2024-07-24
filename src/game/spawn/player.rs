@@ -8,6 +8,8 @@ use crate::{
     game::{animation::Animations, movement::{Movement, MovementController, WrapWithinWindow}}, screen::Screen
 };
 
+use super::level::Level;
+
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);
     app.register_type::<Player>();
@@ -28,6 +30,7 @@ fn spawn_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
+    _level: Res<Level>
 ) {
     let mut scene_bundle = SceneBundle {
         transform: Transform::from_translation(INITIAL_POSITION),
