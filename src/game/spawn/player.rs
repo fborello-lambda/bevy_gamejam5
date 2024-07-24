@@ -8,7 +8,7 @@ use crate::{
     game::{animation::Animations, movement::{Movement, MovementController, WrapWithinWindow}}, screen::Screen
 };
 
-use super::level::Level;
+use super::level::{self, Level};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);
@@ -22,7 +22,6 @@ pub struct SpawnPlayer;
 #[reflect(Component)]
 pub struct Player;
 
-const INITIAL_VELOCITY: Vec3 = Vec3::ZERO;
 const INITIAL_POSITION: Vec3 = Vec3::ZERO;
 
 fn spawn_player(
@@ -30,7 +29,7 @@ fn spawn_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
-    _level: Res<Level>
+    level: Res<Level>
 ) {
     let mut scene_bundle = SceneBundle {
         transform: Transform::from_translation(INITIAL_POSITION),
@@ -53,13 +52,17 @@ fn spawn_player(
         graph: graph_handle,
         animations,
     });
-
+    let velocity = if level.0 == 1 {
+        Vec3::new(0.0, 0.0, 0.0)
+    } else {
+        Vec3::new(20.0, 0.0, 0.0)
+    };
     commands.spawn((
         Name::new("Player"),
         Player,
         scene_bundle,
         MovementController::default(),
-        Movement { velocity: INITIAL_VELOCITY, acceleration:Vec3::ZERO },
+        Movement { velocity , acceleration:Vec3::ZERO },
         WrapWithinWindow,
         StateScoped(Screen::Playing),
     ));
