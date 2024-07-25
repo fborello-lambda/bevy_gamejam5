@@ -52,7 +52,7 @@ fn spawn_player(
         graph: graph_handle,
         animations,
     });
-    let velocity = if level.0 == 1 {
+    let velocity = if *level != Level::BackToLake {
         Vec3::new(0.0, 0.0, 0.0)
     } else {
         Vec3::new(20.0, 0.0, 0.0)

@@ -3,6 +3,8 @@
 //! If you want to move the player in a smoother way,
 //! consider using a [fixed timestep](https://github.com/bevyengine/bevy/blob/latest/examples/movement/physics_in_fixed_timestep.rs).
 
+use std::ops::Deref;
+
 use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::{screen::Screen, AppSet};
@@ -87,8 +89,8 @@ fn control_movement(
     level: Res<Level>,
 ) {
     for (controller, mut movement) in &mut movement_query {
-        match level.0 {
-            2 => {
+        match *level {
+            Level::BackToLake => {
                 movement.acceleration.y = -20.0;
                 if controller.action{
                     movement.acceleration.y = 1000.0;
@@ -145,7 +147,7 @@ fn camera_tracking(
     player_query: Query<&Transform, (With<Player>, Without<Camera>)>,
     level: Res<Level>,
 ) {
-    if level.0 != 2 {
+    if level.deref() != &Level::BackToLake {
         return;
     }
 
