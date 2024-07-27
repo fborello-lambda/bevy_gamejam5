@@ -25,12 +25,12 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Resource, Default, Debug, PartialEq, PartialOrd, Eq)]
-pub enum Level{
+pub enum Level {
     #[default]
     Birth,
     Ocean,
     BackToLake,
-    Death
+    Death,
 }
 
 #[derive(Event, Debug)]
@@ -58,7 +58,7 @@ fn next_level_from_enum(level: &Level) -> Level {
         Level::Birth => Level::Ocean,
         Level::Ocean => Level::BackToLake,
         Level::BackToLake => Level::Death,
-        Level::Death => Level::Birth
+        Level::Death => Level::Birth,
     }
 }
 
@@ -67,6 +67,6 @@ fn prev_level_from_enum(level: &Level) -> Level {
         Level::Birth => Level::Death,
         Level::Ocean => Level::Birth,
         Level::BackToLake => Level::Ocean,
-        Level::Death => Level::BackToLake
+        Level::Death => Level::BackToLake,
     }
 }

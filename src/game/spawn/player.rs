@@ -5,7 +5,11 @@ use std::f32::consts::PI;
 use bevy::prelude::*;
 
 use crate::{
-    game::{animation::Animations, movement::{Movement, MovementController, WrapWithinWindow}}, screen::Screen
+    game::{
+        animation::Animations,
+        movement::{Movement, MovementController, WrapWithinWindow},
+    },
+    screen::Screen,
 };
 
 use super::level::{self, Level};
@@ -29,7 +33,7 @@ fn spawn_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
-    level: Res<Level>
+    level: Res<Level>,
 ) {
     let mut scene_bundle = SceneBundle {
         transform: Transform::from_translation(INITIAL_POSITION),
@@ -62,7 +66,10 @@ fn spawn_player(
         Player,
         scene_bundle,
         MovementController::default(),
-        Movement { velocity , acceleration:Vec3::ZERO },
+        Movement {
+            velocity,
+            acceleration: Vec3::ZERO,
+        },
         WrapWithinWindow,
         StateScoped(Screen::Playing),
     ));

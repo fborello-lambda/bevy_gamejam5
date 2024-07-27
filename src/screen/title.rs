@@ -47,7 +47,7 @@ fn handle_title_action(
                 TitleAction::Play => {
                     commands.insert_resource(Level::Birth);
                     next_screen.set(Screen::Playing)
-                },
+                }
                 TitleAction::Credits => next_screen.set(Screen::Credits),
 
                 #[cfg(not(target_family = "wasm"))]

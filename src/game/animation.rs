@@ -162,7 +162,6 @@ pub(super) fn plugin(app: &mut App) {
 //     }
 // }
 
-
 #[derive(Resource)]
 pub struct Animations {
     pub animations: Vec<AnimationNodeIndex>,

@@ -9,7 +9,10 @@ use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::{screen::Screen, AppSet};
 
-use super::spawn::{level::{self, Level}, player::Player};
+use super::spawn::{
+    level::{self, Level},
+    player::Player,
+};
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
@@ -30,15 +33,12 @@ pub(super) fn plugin(app: &mut App) {
     );
 
     // Camera tracking.
-    app.add_systems(
-        Update,
-        camera_tracking.run_if(in_state(Screen::Playing)),
-    );
+    app.add_systems(Update, camera_tracking.run_if(in_state(Screen::Playing)));
 }
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
-pub struct MovementController{
+pub struct MovementController {
     pub intent: Vec2,
     pub action: bool,
 }
@@ -92,31 +92,28 @@ fn control_movement(
         match *level {
             Level::BackToLake => {
                 movement.acceleration.y = -20.0;
-                if controller.action{
+                if controller.action {
                     movement.acceleration.y = 1000.0;
                 }
-            },
+            }
             _ => {
                 let controller_acceleration = controller.intent * 50.0;
                 movement.acceleration = controller_acceleration.extend(0.0);
-            },
+            }
         }
     }
 }
 
 const MAX_SPEED: f32 = 50.0;
 
-fn update_movement(
-    time: Res<Time>,
-    mut movement_query: Query<(&mut Movement, &mut Transform)>,
-) {
+fn update_movement(time: Res<Time>, mut movement_query: Query<(&mut Movement, &mut Transform)>) {
     for (mut movement, mut transform) in &mut movement_query {
         let acceleration = movement.acceleration;
         movement.velocity += acceleration * time.delta_seconds();
 
         transform.translation += movement.velocity * time.delta_seconds();
 
-        if movement.velocity.length() > 0.0{
+        if movement.velocity.length() > 0.0 {
             let rotation = Quat::from_rotation_arc(Vec3::Z, movement.velocity.normalize());
             transform.rotation = rotation;
         }
