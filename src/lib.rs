@@ -1,9 +1,9 @@
 #[cfg(feature = "dev")]
 mod dev_tools;
+mod fps_counter;
 mod game;
 mod screen;
 mod ui;
-mod fps_counter;
 
 use bevy::{
     asset::AssetMetaCheck,

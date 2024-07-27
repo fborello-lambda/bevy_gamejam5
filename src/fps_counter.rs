@@ -1,4 +1,7 @@
-use bevy::{dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin}, prelude::*};
+use bevy::{
+    dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
+    prelude::*,
+};
 
 pub(super) fn plugin(app: &mut App) {
     // Print state transitions in dev builds

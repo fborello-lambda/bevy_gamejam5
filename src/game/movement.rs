@@ -3,9 +3,16 @@
 //! If you want to move the player in a smoother way,
 //! consider using a [fixed timestep](https://github.com/bevyengine/bevy/blob/latest/examples/movement/physics_in_fixed_timestep.rs).
 
+use std::ops::Deref;
+
 use bevy::{prelude::*, window::PrimaryWindow};
 
-use crate::AppSet;
+use crate::{screen::Screen, AppSet};
+
+use super::spawn::{
+    level::{self, Level},
+    player::Player,
+};
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
@@ -19,15 +26,19 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<(Movement, WrapWithinWindow)>();
     app.add_systems(
         Update,
-        (update_movement, wrap_within_window)
+        (control_movement, update_movement, wrap_within_window)
             .chain()
+            .run_if(in_state(Screen::Playing))
             .in_set(AppSet::Update),
     );
+
+    // Camera tracking.
+    app.add_systems(Update, camera_tracking.run_if(in_state(Screen::Playing)));
 }
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
-pub struct MovementController{
+pub struct MovementController {
     pub intent: Vec2,
     pub action: bool,
 }
@@ -73,18 +84,41 @@ pub struct Movement {
     pub velocity: Vec3,
 }
 
-fn update_movement(
-    time: Res<Time>,
-    mut movement_query: Query<(&MovementController, &mut Movement, &mut Transform)>,
+fn control_movement(
+    mut movement_query: Query<(&MovementController, &mut Movement)>,
+    level: Res<Level>,
 ) {
-    for (controller, mut movement, mut transform) in &mut movement_query {
-        let controller_acceleration = controller.intent * 50.0;
-        movement.acceleration = controller_acceleration.extend(0.0);
+    for (controller, mut movement) in &mut movement_query {
+        match *level {
+            Level::BackToLake => {
+                movement.acceleration.y = -20.0;
+                if controller.action {
+                    movement.acceleration.y = 1000.0;
+                }
+            }
+            _ => {
+                let controller_acceleration = controller.intent * 50.0;
+                movement.acceleration = controller_acceleration.extend(0.0);
+            }
+        }
+    }
+}
 
+const MAX_SPEED: f32 = 50.0;
+
+fn update_movement(time: Res<Time>, mut movement_query: Query<(&mut Movement, &mut Transform)>) {
+    for (mut movement, mut transform) in &mut movement_query {
         let acceleration = movement.acceleration;
         movement.velocity += acceleration * time.delta_seconds();
 
         transform.translation += movement.velocity * time.delta_seconds();
+
+        if movement.velocity.length() > 0.0 {
+            let rotation = Quat::from_rotation_arc(Vec3::Z, movement.velocity.normalize());
+            transform.rotation = rotation;
+        }
+
+        movement.velocity = movement.velocity.clamp_length_max(MAX_SPEED);
     }
 }
 
@@ -103,4 +137,19 @@ fn wrap_within_window(
         let wrapped = (position + half_size).rem_euclid(size) - half_size;
         transform.translation = wrapped.extend(transform.translation.z);
     }
+}
+
+fn camera_tracking(
+    mut camera_query: Query<&mut Transform, With<Camera>>,
+    player_query: Query<&Transform, (With<Player>, Without<Camera>)>,
+    level: Res<Level>,
+) {
+    if level.deref() != &Level::BackToLake {
+        return;
+    }
+
+    let mut camera = camera_query.single_mut();
+    let player = player_query.single();
+
+    camera.translation = Vec3::new(player.translation.x, 0.0, 30.0);
 }
