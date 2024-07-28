@@ -9,10 +9,7 @@ use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::{screen::Screen, AppSet};
 
-use super::spawn::{
-    level::{self, Level},
-    player::Player,
-};
+use super::spawn::{level::Level, player::Player};
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
@@ -97,14 +94,14 @@ fn control_movement(
                 }
             }
             _ => {
-                let controller_acceleration = controller.intent * 50.0;
+                let controller_acceleration = controller.intent * 10.0;
                 movement.acceleration = controller_acceleration.extend(0.0);
             }
         }
     }
 }
 
-const MAX_SPEED: f32 = 50.0;
+const MAX_SPEED: f32 = 20.0;
 
 fn update_movement(time: Res<Time>, mut movement_query: Query<(&mut Movement, &mut Transform)>) {
     for (mut movement, mut transform) in &mut movement_query {
@@ -126,16 +123,13 @@ fn update_movement(time: Res<Time>, mut movement_query: Query<(&mut Movement, &m
 #[reflect(Component)]
 pub struct WrapWithinWindow;
 
-fn wrap_within_window(
-    window_query: Query<&Window, With<PrimaryWindow>>,
-    mut wrap_query: Query<&mut Transform, With<WrapWithinWindow>>,
-) {
-    let size = window_query.single().size() + 256.0;
-    let half_size = size / 2.0;
+// This way is not ideal, it depends on the camera position
+const X_LIMITS: (f32, f32) = (-21.0, 21.0);
+const Y_LIMITS: (f32, f32) = (-12.0, 12.0);
+fn wrap_within_window(mut wrap_query: Query<&mut Transform, With<WrapWithinWindow>>) {
     for mut transform in &mut wrap_query {
-        let position = transform.translation.xy();
-        let wrapped = (position + half_size).rem_euclid(size) - half_size;
-        transform.translation = wrapped.extend(transform.translation.z);
+        transform.translation.x = transform.translation.x.clamp(X_LIMITS.0, X_LIMITS.1);
+        transform.translation.y = transform.translation.y.clamp(Y_LIMITS.0, Y_LIMITS.1);
     }
 }
 
@@ -144,12 +138,12 @@ fn camera_tracking(
     player_query: Query<&Transform, (With<Player>, Without<Camera>)>,
     level: Res<Level>,
 ) {
-    if level.deref() != &Level::BackToLake {
-        return;
-    }
-
     let mut camera = camera_query.single_mut();
-    let player = player_query.single();
 
-    camera.translation = Vec3::new(player.translation.x, 0.0, 30.0);
+    if level.deref() != &Level::BackToLake {
+        *camera = Transform::from_xyz(0.0, 0.0, 30.0).looking_at(Vec3::ZERO, Vec3::Y);
+    } else {
+        let player = player_query.single();
+        camera.translation = Vec3::new(player.translation.x, 0.0, 30.0);
+    }
 }
