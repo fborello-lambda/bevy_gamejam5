@@ -10,6 +10,7 @@ use bevy::{
     audio::{AudioPlugin, Volume},
     prelude::*,
 };
+use bevy_rapier3d::prelude::*;
 
 pub struct AppPlugin;
 
@@ -61,10 +62,19 @@ impl Plugin for AppPlugin {
             brightness: 5000.,
         });
 
+        // Rapier - Collisions Engine
+        app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
+        // Not using Dynamic rigid bodies, so disabling gravity is not strictly necessary.
+        app.insert_resource(RapierConfiguration {
+            gravity: Vec3::ZERO,
+            ..RapierConfiguration::new(1.0)
+        });
+
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
-        app.add_plugins(dev_tools::plugin);
-        app.add_plugins(fps_counter::plugin);
+        app.add_plugins(dev_tools::plugin)
+            .add_plugins(fps_counter::plugin)
+            .add_plugins(RapierDebugRenderPlugin::default());
     }
 }
 

@@ -6,6 +6,7 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
 use crate::screen::Screen;
 
+use super::level1_score::SpawnScoreText;
 use super::player::SpawnPlayer;
 
 pub(super) fn plugin(app: &mut App) {
@@ -40,6 +41,9 @@ fn spawn_level(_trigger: Trigger<SpawnLevel>, mut commands: Commands, level: Res
     // The only thing we have in our level is a player,
     // but add things like walls etc. here.
     commands.trigger(SpawnPlayer);
+    commands.trigger(SpawnScoreText);
+    // I've tried this but it's not working well with the timer resource
+    //commands.trigger(SpawnFood);
     println!("Spawning level {:#?}", level);
 }
 
